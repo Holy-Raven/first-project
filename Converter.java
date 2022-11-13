@@ -1,2 +1,2 @@
-public class Praktikum {
+public class Converter {
 }

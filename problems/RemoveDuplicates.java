@@ -13,7 +13,7 @@ public class RemoveDuplicates {
         }
     }
 
-    public static int  removeDuplicates(int[] nums) {
+    public static int removeDuplicates(int[] nums) {
 
         int k = 1;
 

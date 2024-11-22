@@ -1,4 +1,4 @@
-package yandex.contest;
+package yandex.contest.sprint1;
 
 import java.io.IOException;
 import java.io.InputStreamReader;

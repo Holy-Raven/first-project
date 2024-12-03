@@ -20,17 +20,21 @@ public class Sprint2Task1 {
                 StringTokenizer tokenizer = new StringTokenizer(reader.readLine());
                 String command = tokenizer.nextToken();
 
-                switch (command) {
-                    case "push_back" -> {
-                        int value = Integer.parseInt(tokenizer.nextToken());
-                        deque.pushBack(value);
+                try {
+                    switch (command) {
+                        case "push_back" -> {
+                            int value = Integer.parseInt(tokenizer.nextToken());
+                            deque.pushBack(value);
+                        }
+                        case "push_front" -> {
+                            int value = Integer.parseInt(tokenizer.nextToken());
+                            deque.pushFront(value);
+                        }
+                        case "pop_back" -> System.out.println(deque.popBack());
+                        case "pop_front" -> System.out.println(deque.popFront());
                     }
-                    case "push_front" -> {
-                        int value = Integer.parseInt(tokenizer.nextToken());
-                        deque.pushFront(value);
-                    }
-                    case "pop_back" -> deque.popBack();
-                    case "pop_front" -> deque.popFront();
+                } catch (DequeException e) {
+                    System.out.println("error");
                 }
             }
         }
@@ -62,8 +66,7 @@ class Deque {
 
     public void pushBack(int value) {
         if (isFulL()) {
-            System.out.println("error");
-            return;
+            throw new DequeException();
         }
         queue[tail] = value;
         tail = (tail + 1) % max_n;
@@ -72,32 +75,36 @@ class Deque {
 
     public void pushFront(int value) {
         if (isFulL()) {
-            System.out.println("error");
-            return;
+            throw new DequeException();
         }
         head = (head - 1 + max_n) % max_n;
         queue[head] = value;
         size++;
     }
 
-    public void popBack() {
+    public int popBack() {
         if (isEmpty()) {
-            System.out.println("error");
-            return;
+            throw new DequeException();
         }
         tail = (tail - 1 + max_n) % max_n;
-        System.out.println(queue[tail]);
         size--;
+        return queue[tail];
     }
 
-    public void popFront() {
+    public int popFront() {
         if (isEmpty()) {
-            System.out.println("error");
-            return;
+            throw new DequeException();
         }
-        System.out.println(queue[head]);
+
+        int result = queue[head];
         head = (head + 1) % max_n;
         size--;
+        return result;
+    }
+}
+
+class DequeException extends RuntimeException {
+    public DequeException() {
     }
 }
 
@@ -105,7 +112,7 @@ class Deque {
 -- ПРИНЦИП РАБОТЫ --
 За основу для решения этой задачи я взял пример из урока о реализации очереди на кольцевом буфере, по сути добавил два метода, которые позволяют работать с двумя сторонами очереди.
 -- ВРЕМЕННАЯ СЛОЖНОСТЬ --
-O(1) на все операции, как и в примере с обычной очередью
+O(1) на все операции. Общая временная сложность O(n) где n - число поданных на вход команд
 -- ПРОСТРАНСТВЕННАЯ СЛОЖНОСТЬ --
 О(n) где n - размер нашего хранилищв / буффера (max_n)
  */

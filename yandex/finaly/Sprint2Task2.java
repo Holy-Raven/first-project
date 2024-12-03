@@ -3,6 +3,7 @@ package yandex.finaly;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
@@ -21,28 +22,20 @@ public class Sprint2Task2 {
 
                 switch (token) {
                     case "+" -> {
-                        int firstNumber = stack.pop();
-                        int secondNumber = stack.pop();
-                        stack.push(secondNumber + firstNumber);
+                        SimpleEntry<Integer, Integer> pair = getPairNumbers(stack);
+                        stack.push(pair.getKey() + pair.getValue());
                     }
                     case "-" -> {
-                        int firstNumber = stack.pop();
-                        int secondNumber = stack.pop();
-                        stack.push(secondNumber - firstNumber);
+                        SimpleEntry<Integer, Integer> pair = getPairNumbers(stack);
+                        stack.push(pair.getKey() - pair.getValue());
                     }
                     case "*" -> {
-                        int firstNumber = stack.pop();
-                        int secondNumber = stack.pop();
-                        stack.push(secondNumber * firstNumber);
+                        SimpleEntry<Integer, Integer> pair = getPairNumbers(stack);
+                        stack.push(pair.getKey() * pair.getValue());
                     }
                     case "/" -> {
-                        int firstNumber = stack.pop();
-                        int secondNumber = stack.pop();
-                        int result = secondNumber / firstNumber;
-                        if (secondNumber % firstNumber != 0 && ((secondNumber < 0 && firstNumber > 0) || (secondNumber > 0 && firstNumber < 0))) {
-                            result -= 1;
-                        }
-                        stack.push(result);
+                        SimpleEntry<Integer, Integer> pair = getPairNumbers(stack);
+                        stack.push(Math.floorDiv(pair.getKey(), pair.getValue()));
                     }
                     default -> stack.push(Integer.parseInt(token));
                 }
@@ -50,6 +43,12 @@ public class Sprint2Task2 {
 
             System.out.print(stack.pop());
         }
+    }
+
+    private static SimpleEntry<Integer, Integer> getPairNumbers(Stack<Integer> stack) {
+        int first = stack.pop();
+        int second = stack.pop();
+        return new SimpleEntry<>(second, first);
     }
 }
 

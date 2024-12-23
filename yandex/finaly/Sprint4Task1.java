@@ -3,155 +3,102 @@ package yandex.finaly;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.StringTokenizer;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.LinkedList;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import java.util.*;
 
 public class Sprint4Task1 {
 
     public static void main(String[] args) throws IOException {
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
-            int count = Integer.parseInt(reader.readLine());
 
-            MyHashMap storage = new MyHashMap(300_007);
+            int documentCount = Integer.parseInt(reader.readLine());
 
-            for (int i = 0; i < count; i++) {
+            Map<String, Map<Integer, Integer>> inputData = new LinkedHashMap<>();
 
+            for (int document = 1; document <= documentCount; document++) {
                 StringTokenizer tokenizer = new StringTokenizer(reader.readLine());
 
-                switch (tokenizer.nextToken()) {
-                    case "put" ->
-                            storage.put(Integer.parseInt(tokenizer.nextToken()), Integer.parseInt(tokenizer.nextToken()));
-                    case "get" -> {
-                        Integer result = storage.get(Integer.parseInt(tokenizer.nextToken()));
-                        if (result == null) {
-                            System.out.println("None");
-                        } else {
-                            System.out.println(result);
-                        }
-                    }
-                    case "delete" -> {
-                        Integer removed = storage.remove(Integer.parseInt(tokenizer.nextToken()));
-                        if (removed == null) {
-                            System.out.println("None");
-                        } else {
-                            System.out.println(removed);
+                while (tokenizer.hasMoreTokens()) {
+                    String word = tokenizer.nextToken();
+
+                    inputData.putIfAbsent(word, new HashMap<>());
+                    Map<Integer, Integer> insideMap = inputData.get(word);
+
+                    insideMap.put(document, insideMap.getOrDefault(document, 0) + 1);
+                }
+            }
+
+            int queryCount = Integer.parseInt(reader.readLine());
+
+            for (int query = 1; query <= queryCount; query++) {
+                StringTokenizer tokenizer = new StringTokenizer(reader.readLine());
+
+                Map<Integer, Integer> relevantedMap = new LinkedHashMap<>();
+                Set<String> processed = new HashSet<>();
+
+                while (tokenizer.hasMoreTokens()) {
+                    String queryWord = tokenizer.nextToken();
+
+                    if (!processed.contains(queryWord) && inputData.containsKey(queryWord)) {
+                        processed.add(queryWord);
+
+                        Map<Integer, Integer> insideMap = inputData.get(queryWord);
+
+                        for (Map.Entry<Integer, Integer> entry : insideMap.entrySet()) {
+                            int document = entry.getKey();
+                            int frequency = entry.getValue();
+
+                            relevantedMap.put(document, relevantedMap.getOrDefault(document, 0) + frequency);
                         }
                     }
                 }
+
+                List<Map.Entry<Integer, Integer>> sortedResult = new ArrayList<>(relevantedMap.entrySet());
+                sortedResult.sort(Comparator.comparingInt(Map.Entry::getKey));
+                sortedResult.sort((entry1, entry2) -> entry2.getValue() - entry1.getValue());
+
+                for (int i = 0; i < Math.min(5, sortedResult.size()); i++) {
+                    System.out.print(sortedResult.get(i).getKey() + " ");
+                }
+                System.out.println();
             }
         }
-    }
-}
-
-class MyHashMap {
-
-    private final int capacity;
-    private final LinkedList<SimpleEntry<Integer, Integer>>[] buckets;
-
-    public MyHashMap(int capacity) {
-
-        this.capacity = capacity;
-        this.buckets = new LinkedList[capacity];
-
-        for (int i = 0; i < capacity; i++) {
-            buckets[i] = new LinkedList<>();
-        }
-    }
-
-    public void put(int key, int value) {
-
-        int index = hash(key);
-
-        SimpleEntry<Integer, Integer> entry = findEntry(index, key);
-        if (entry != null) {
-            entry.setValue(value);
-        } else {
-            buckets[index].add(new SimpleEntry<>(key, value));
-        }
-    }
-
-    public Integer get(int key) {
-
-        int index = hash(key);
-
-        SimpleEntry<Integer, Integer> entry = findEntry(index, key);
-        if (entry == null) {
-            return null;
-        }
-        return entry.getValue();
-    }
-
-    public Integer remove(int key) {
-
-        int index = hash(key);
-
-        SimpleEntry<Integer, Integer> entry = findEntry(index, key);
-        if (entry == null) {
-            return null;
-        }
-        buckets[index].remove(entry);
-        return entry.getValue();
-    }
-
-    private SimpleEntry<Integer, Integer> findEntry(int index, int key) {
-
-        LinkedList<SimpleEntry<Integer, Integer>> bucket = buckets[index];
-
-        for (SimpleEntry<Integer, Integer> entry : bucket) {
-            if (entry.getKey().equals(key)) {
-                return entry;
-            }
-        }
-        return null;
-    }
-
-    private int hash(int key) {
-        return Math.abs(key) % capacity;
     }
 }
 
 /*
 -- ПРИНЦИП РАБОТЫ --
-Для реализации класса MyHashMap, учитывая что нет необходимости в расширении,
-за основу взят массив, состоящий из связных списков (LinkedList). Это позволяет
-решать коллизии методом цепочки. Связный список будет хранить пару значений
-(key, value), в качестве хранилища данных выбран SimpleEntry. Класс MyHashMap,
-помимо базовых бизнес-методов get, put, remove, содержит также два дополнительных
-метода. Метод hash вычисляет корзину по id сотрудника (наш hash) и выбранному
-capacity (взял простое число на порядок большее, чем допустимое количесиво ключей ),
-где будет храниться наше значение. Метод findEntry создан в соответствии с принципом
-DRY, так как он вызывается во всех базовых бизнес-методах.
+    Для загрузки данных используется вложенная структура Map. В первой карте ключом будет уникальное слово, а значением по
+этому ключу - еще одна карта, где ключ - номер входящего документа, а значение - количество раз, которое слово встретилось
+в этом документе.
+        Создадим хранилище, куда будем записывать данные о релевантности документов. В ходе обработки каждого запроса будем
+отдельно рассматривать каждое слово. Создаем множество уникальных слов, чтобы каждое слово запроса было обработано только
+один раз. Если слово не содержится в карте входных данных, то ничего не делаем. Если содержится, то проверяем, встречается
+ли слово в i-ом документе. Если встречается, то заносим информацию об этом в нашу карту релевантности, где ключом будет номер
+документа i, а значением - число вхождений слова в документ. Если запись в карте релевантности для данного документа уже
+существует, то добавляем к значению частоту текущего слова. Если записи еще нет, то устанавливаем значение, равное частоте
+текущего слова. Если слово встречалось сразу в нескольких документах, то в карту релевантности добавятся несколько записей
+с ключами, равными номерам этих документов.
+    Проходя по всем словам запроса, в карте релевантности будут собраны записи с ключами, равными номерам документов, и
+значениями - натуральными числами, показывающими суммарное число вхождений всех слов запроса в каждый из документов.
+    Собранные данны необходимо отсортировать. Создадим список пар ключ-значение из данных нашей карты релевантности.
+Сперва отсортируем по возрастанию номера документа, а после по убыванию релевантности.
+    Выведем в консоль 5 наиболее релевантных документов для каждого запроса, если документов меньше, выведем что есть,
+исключая те документы релевантность которых = 0.
 
 -- ВРЕМЕННАЯ СЛОЖНОСТЬ --
-Поиск по корзине работает за O(1), а поиск значения внутри самой корзины — за O(n).
-Если неудачно выбрать capacity, то класс может выродиться в связный список, и
-тогда его временная сложность станет O(n). В среднем же временная сложность — O(1).
+    Заполнение карты входных данных происходит за O(q * n), где q это число слов в каждом документе, n - число документов
+Обработка результатов просходи за O(k * m) где k это число слов в запросе, m - число запросов.
+Временная сложноть по сохранению данных и изъятию из карт можно пренебречь. Время сортировки происходит за O(m * n * log n).
+Общая временная сложность O(q * n) + O(k * m) + O(m * n * log n) или O(q * n + k * m + m * n * log n)
 
 -- ПРОСТРАНСТВЕННАЯ СЛОЖНОСТЬ --
-Пространственная сложность составляет O(n), где n — общее количество пар (key, value).
+    Карта входных данных O(w + d * w), где w - уникальные слова, w * d - это наша вложенная карта где ключ номер документа,
+а значениек количество вхождений слова в документ
+    Карта для каждого запроса с n - элементами O(n). Общая временная сложность O(w + d * w) + O(n) или O(w + d * w + n)
 */
 
-//https://contest.yandex.ru/contest/24414/problems/B/
-
-
-//enum Switcher {
-//
-//    GET("get"),
-//
-//    PUT("put"),
-//
-//    DEL("delete");
-//
-//    private Switcher(String value) {
-//        this.value = value;
-//    }
-//
-//    public String getValue() {
-//        return value;
-//    }
-//
-//    private final String value;
-//}
-
+//https://contest.yandex.ru/contest/24414/problems/A/

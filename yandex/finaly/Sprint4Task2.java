@@ -15,10 +15,6 @@ public class Sprint4Task2 {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
             int count = Integer.parseInt(reader.readLine());
 
-            // сперва я хотел лучшее простое число - 37, но у меня был TL на больших датах,
-            // нашел, что: "количество ключей в хеш-таблице не может превышать 10^5.", потому
-            // добавил нулей, и число стало примерно в три раза больше и осталось простым
-
             MyHashMap storage = new MyHashMap(300_007);
 
             for (int i = 0; i < count; i++) {

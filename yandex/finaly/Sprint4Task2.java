@@ -3,6 +3,7 @@ package yandex.finaly;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.LinkedList;
@@ -13,6 +14,10 @@ public class Sprint4Task2 {
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
             int count = Integer.parseInt(reader.readLine());
+
+            // сперва я хотел лучшее простое число - 37, но у меня был TL на больших датах,
+            // нашел, что: "количество ключей в хеш-таблице не может превышать 10^5.", потому
+            // добавил нулей, и число стало примерно в три раза больше и осталось простым
 
             MyHashMap storage = new MyHashMap(300_007);
 
@@ -25,19 +30,11 @@ public class Sprint4Task2 {
                             storage.put(Integer.parseInt(tokenizer.nextToken()), Integer.parseInt(tokenizer.nextToken()));
                     case "get" -> {
                         Integer result = storage.get(Integer.parseInt(tokenizer.nextToken()));
-                        if (result == null) {
-                            System.out.println("None");
-                        } else {
-                            System.out.println(result);
-                        }
+                        System.out.println(result == null ? "None" : result);
                     }
                     case "delete" -> {
                         Integer removed = storage.remove(Integer.parseInt(tokenizer.nextToken()));
-                        if (removed == null) {
-                            System.out.println("None");
-                        } else {
-                            System.out.println(removed);
-                        }
+                        System.out.println(removed == null ? "None" : removed);
                     }
                 }
             }
@@ -48,7 +45,7 @@ public class Sprint4Task2 {
 class MyHashMap {
 
     private final int capacity;
-    private final LinkedList<SimpleEntry<Integer, Integer>>[] buckets;
+    private final List<SimpleEntry<Integer, Integer>>[] buckets;
 
     @SuppressWarnings("unchecked")
     public MyHashMap(int capacity) {
@@ -98,7 +95,7 @@ class MyHashMap {
 
     private SimpleEntry<Integer, Integer> findEntry(int index, int key) {
 
-        LinkedList<SimpleEntry<Integer, Integer>> bucket = buckets[index];
+        List<SimpleEntry<Integer, Integer>> bucket = buckets[index];
 
         for (SimpleEntry<Integer, Integer> entry : bucket) {
             if (entry.getKey().equals(key)) {

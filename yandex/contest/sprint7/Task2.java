@@ -58,7 +58,7 @@ public class Task2 {
         public int compareTo(Job o) {
             int cmp = Double.compare(this.end, o.end);
             if (cmp == 0) {
-                return Double.compare(this.start, o.start); // если времена окончания равны, выбираем занятие с меньшим временем начала
+                return Double.compare(this.start, o.start);
             }
             return cmp;
         }

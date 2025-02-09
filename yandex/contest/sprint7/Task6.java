@@ -24,25 +24,21 @@ public class Task6 {
     }
 
     private static int calculate() {
-        final int MOD = 1_000_000_007;
+        int MOD = 1_000_000_007;
 
         List<Integer> dp = new ArrayList<>();
-        dp.add(0);      // dp[0] не используется
-        dp.add(1);      // dp[1] только один способ оказаться на первой ступеньки
+        dp.add(0);
+        dp.add(1);
 
-        // Вычисляем dp[i] для i от 2 до n
         for (int i = 2; i <= n; i++) {
             int ways = 0;
-            // Перебираем все возможные прыжки от 1 до k
             for (int j = 1; j <= k; j++) {
-                int prevStep = i - j - 1;
+                int prevStep = i - j;
                 if (prevStep < 1) {
-                    // Если предыдущей ступеньки нет, прекращаем перебор
                     break;
                 }
                 ways = (ways + dp.get(prevStep)) % MOD;
             }
-            // Добавляем вычисленное значение dp[i] в список
             dp.add(ways);
         }
 

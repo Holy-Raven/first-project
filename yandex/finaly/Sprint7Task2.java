@@ -34,27 +34,26 @@ public class Sprint7Task2 {
         // Если сумма нечётная, нельзя разбить на две равные части
         if (sum % 2 == 1) {
             return false;
-        } else {
-            int half = sum / 2;
+        }
+        int half = sum / 2;
 
-            // Массив dp, где dp[s] показывает, можно ли набрать сумму s
-            boolean[] dp = new boolean[half + 1];
-            // Базовый случай, так как сумму 0 можно набрать без очков
-            dp[0] = true;
+        // Массив dp, где dp[s] показывает, можно ли набрать сумму s
+        boolean[] dp = new boolean[half + 1];
+        // Базовый случай, так как сумму 0 можно набрать без очков
+        dp[0] = true;
 
-            // Заполняем dp
-            for (int score : scores) {
-                // Для каждой суммы s проверяем, можно ли её набрать с учётом текущего значения score
-                for (int s = half; s >= score; s--) {
-                    if (dp[s - score]) {
-                        dp[s] = true;
-                    }
+        // Заполняем dp
+        for (int score : scores) {
+            // Для каждой суммы s проверяем, можно ли её набрать с учётом текущего значения score
+            for (int s = half; s >= score; s--) {
+                if (dp[s - score]) {
+                    dp[s] = true;
                 }
             }
-            // Если dp[half] = true, значит, можно набрать ровно половину суммы,
-            // а оставшиеся очки автоматически образуют вторую половину.
-            return dp[half];
         }
+        // Если dp[half] = true, значит, можно набрать ровно половину суммы,
+        // а оставшиеся очки автоматически образуют вторую половину.
+        return dp[half];
     }
 }
 
@@ -74,4 +73,4 @@ half + 1, где dp[s] показывает, можно ли набрать су
 Храним одномерный массив dp размером O (half)
 */
 
-//https://contest.yandex.ru/contest/25597/run-report/133400687/
+//https://contest.yandex.ru/contest/25597/run-report/133468039/

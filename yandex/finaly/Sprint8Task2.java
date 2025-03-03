@@ -3,93 +3,97 @@ package yandex.finaly;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 public class Sprint8Task2 {
 
     public static void main(String[] args) throws IOException {
-
+        // Инициализация корня Trie
+        TrieNode root = new TrieNode();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
             String baseLine = reader.readLine().trim();
             int n = Integer.parseInt(reader.readLine().trim());
 
-            String[] words = new String[n];
             for (int i = 0; i < n; i++) {
-                words[i] = reader.readLine().trim();
+                addString(root, reader.readLine().trim());
             }
 
-            System.out.println(isSplits(baseLine, words) ? "YES" : "NO");
+            System.out.println(isSplits(root, baseLine) ? "YES" : "NO");
         }
     }
 
-    private static boolean isSplits(String baseLine, String[] words) {
-        // СОздание массива dp, с начальным условием для пустой строки.
+    private static boolean isSplits(TrieNode root, String baseLine) {
+        // Создание массива dp, с начальным условием для пустой строки.
         boolean[] dp = new boolean[baseLine.length() + 1];
         dp[0] = true;
 
         // Проверки возможности разбиения.
         for (int i = 0; i < baseLine.length(); i++) {
             if (dp[i]) {
-                // Попытка разбиения с использованием каждого слова.
-                for (String word : words) {
-                    if (i + word.length() <= baseLine.length() && search(baseLine.substring(i, i + word.length()), word).contains(0)) {
-                        // Обновление dp если слово подходит.
-                        dp[i + word.length()] = true;
+                TrieNode currentNode = root;
+                for (int j = i; j < baseLine.length(); j++) {
+                    int index = baseLine.charAt(j) - 'a';
+                    if (currentNode.children[index] == null) {
+                        // Перехода нет – прерываем
+                        break;
+                    }
+                    currentNode = currentNode.children[index];
+                    // Если это конец слова, обновляем dp
+                    if (currentNode.isEndOfWord) {
+                        dp[j + 1] = true;
                     }
                 }
             }
         }
-
         // Возвращение результата для последнего символа строки.
         return dp[baseLine.length()];
     }
 
-
-    // Метод эффективного поиска шаблона в тексте
-    private static List<Integer> search(String text, String p) {
-        List<Integer> result = new ArrayList<>();
-        String s = p + "#" + text;
-        int[] pi = new int[s.length()];
-        Arrays.fill(pi, 0);
-        int pi_prev = 0;
-        for (int i = 1; i < s.length(); i++) {
-            int k = pi_prev;
-            while (k > 0 && s.charAt(k) != s.charAt(i)) {
-                k = pi[k - 1];
+    //Вставка слова в дерево
+    private static void addString(TrieNode root, String key) {
+        TrieNode currentNode = root;
+        for (int i = 0; i < key.length(); i++) {
+            int index = key.charAt(i) - 'a';
+            if (currentNode.children[index] == null) {
+                // Создаем новый узел, если такого пути еще нет
+                currentNode.children[index] = new TrieNode();
             }
-            if (s.charAt(k) == s.charAt(i)) {
-                k++;
-            }
-            if (i >= p.length() + 1) {
-                pi[i] = k;
-                if (k == p.length()) {
-                    result.add(i - 2 * p.length());
-                }
-            }
-            pi_prev = k;
+            // Переходим к следующему узлу
+            currentNode = currentNode.children[index];
         }
-        return result;
+        // Помечаем currentNode как терминальный
+        currentNode.isEndOfWord = true;
+    }
+}
+
+class TrieNode {
+
+    // Слова состоят только из строчных английских букв
+    TrieNode[] children = new TrieNode[26];
+    boolean isEndOfWord = false;
+
+    public TrieNode() {
+        for (int i = 0; i < 26; i++) {
+            children[i] = null;
+        }
     }
 }
 
 /*
-Для решения задачи определения возможности разделения строки baseLine на слова из словаря применяем метод динамического
-программирования. Создаём массив dp размером baseLine.length() + 1, где каждый элемент dp[i] равен true, если подстроку
-baseLine от начала до i можно разбить на слова из словаря. Инициализируем dp[0] как true, поскольку пустую строку можно
-считать разбитой. Поочередно проходим по каждой позиции i в строке baseLine. Если dp[i] равно true, проверяем каждое слово
-из словаря на возможность его включения начиная с этой позиции. Для этого используем метод search, который проверяет,
-можно ли вставить слово начиная с позиции i. Если search возвращает список индексов с первым вхождением равным 0, то
-слово может быть использовано, и мы устанавливаем dp[i + word.length()] в true.
+-- ПРИНЦИП РАБОТЫ --
+Для решения задачи применяем метод динамического программирования в сочетании с префиксным деревом Trie. Создаём массив
+dp размером baseLine.length() + 1. Инициализируем dp[0] как true, поскольку пустую строку можно считать разбитой. Поочередно
+проходим по каждой позиции i в строке baseLine. Если dp[i] равно true, начинаем проверять подстроки. Для каждой подстроки
+проверяем, соответствует ли она какому-либо слову в Trie, продвигаясь по символам подстроки в дереве. Если достигнут
+терминальный узел, то обновляем dp[j + 1] в true, где j - индекс последнего символа в текущей подстроке.
 
 -- ВРЕМЕННАЯ СЛОЖНОСТЬ --
-Временная сложность алгоритма составляет O(n * m * l), где n - длина строки baseLine, m - количество слов в словаре, и
-l - максимальная длина слова. На каждой позиции строки потенциально проверяем каждое слово, а каждая проверка может
-требовать времени до O(l).
+Использование Trie дает нам O(l) для каждой подстроки, где l - длина текущей подстроки. Общая временная сложность
+составляет O(n * m), где n - длина строки baseLine, и m - максимальная длина слова в словаре.
 
 -- ПРОСТРАНСТВЕННАЯ СЛОЖНОСТЬ --
-Мы храним входные данные. Создаём массив dp и используепм вспомогательные данные в методе search. Общая пространственная
-сложность алгоритма составляет O(n + l), где n - размер массива dp, а l - максимальный размер вспомогательных данных.
+Мы храненим наше дерево Trie, которое требует O(m * l), где m - количество слов в словаре, и l - максимальная длина слова.
+Дополнительно используем массив dp размером O(n), где n - длина строки baseLine. Таким образом, общая пространственная
+сложность составляет O(m * l + n).
 */
 
+//https://contest.yandex.ru/contest/26133/run-report/134338985/
